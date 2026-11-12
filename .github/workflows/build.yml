@@ -1,0 +1,84 @@
+name: build
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar Poetry
+        run: pip install poetry
+
+      - name: Instalar dependencias
+        run: poetry install
+
+      - name: Generar iconos
+        run: poetry run python scripts/make_icons.py
+
+      - name: Ejecutar tests
+        run: poetry run pytest
+
+      - name: Build con PyInstaller
+        run: poetry run pyinstaller packaging/XFiles.spec --noconfirm --clean
+
+      - name: Smoke test del binario
+        run: QT_QPA_PLATFORM=offscreen ./dist/XFiles/XFiles --selftest
+
+      - name: Empaquetar .deb y .tar.gz
+        run: bash packaging/linux/build_deb.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: XFiles-linux
+          path: |
+            packaging/dist/*.deb
+            packaging/dist/*.tar.gz
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar Poetry
+        run: pip install poetry
+
+      - name: Instalar dependencias
+        run: poetry install
+
+      - name: Generar iconos
+        run: poetry run python scripts/make_icons.py
+
+      - name: Ejecutar tests
+        run: poetry run pytest
+
+      - name: Build con PyInstaller
+        run: poetry run pyinstaller packaging/XFiles.spec --noconfirm --clean
+
+      - name: Smoke test del binario
+        run: dist\XFiles\XFiles.exe --selftest
+
+      - name: Instalar Inno Setup
+        shell: bash
+        run: choco install innosetup -y --no-progress
+
+      - name: Compilar instalador (.exe)
+        shell: bash
+        run: '"C:/Program Files (x86)/Inno Setup 6/ISCC.exe" packaging/windows/XFiles.iss'
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: XFiles-windows
+          path: packaging/dist/XFiles-Setup-*.exe

@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "xfiles"
+version = "0.1.0"
+description = "Aplicación de escritorio multiplataforma para transformar archivos: convertir PDF/DOCX/TXT/Markdown entre sí, y dividir o unir PDFs."
+authors = ["Alexandra La Cruz <alexandra.lacruz@gmail.com>"]
+readme = "README.md"
+packages = [{ include = "xfiles", from = "src" }]
+
+[tool.poetry.dependencies]
+python = ">=3.12,<3.13"
+PySide6 = "^6.7"
+PyMuPDF = "^1.24"
+python-docx = "^1.1"
+fpdf2 = "^2.7"
+Markdown = "^3.6"
+weasyprint = "^63"
+xhtml2pdf = "^0.2.16"
+docx2pdf = { version = "^0.1.8", markers = "sys_platform == 'win32'" }
+
+[tool.poetry.scripts]
+xfiles = "xfiles.app:main"
+xfiles-cli = "xfiles.cli:main"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0"
+pyinstaller = "^6.6"
+pillow = "^10.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
